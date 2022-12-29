@@ -42,6 +42,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         private bool _panaceaInstalled;
         private bool _devView;
         private string _launchGame = "kh2";
+        private static string StoragePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         private List<string> _supportedGames = new List<string>()
         {
             "kh2",
@@ -49,7 +50,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             "bbs",
             "Recom"
         };
-        private int _wizardVersionNumber = 1;
+        private int _wizardVersionNumber = 3;
         private string[] executable = new string[]
         {
             "KINGDOM HEARTS II FINAL MIX.exe",
@@ -413,7 +414,26 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             FetchUpdates();
 
             if (ConfigurationService.WizardVersionNumber < _wizardVersionNumber)
-                WizardCommand.Execute(null);
+                if (ConfigurationService.PcReleaseLocation != null)
+                {
+                    // ConfigurationService.GameDataLocation = StoragePath + "\\kh2"; Edit mod-manager.yml configurations
+                    // Directory.CreateDirectory(StoragePath + "\\kh2"); // Create Directories
+                    Directory.Move("data", "kh2"); // Directory.Move(sourceDir, destinationDir) Create destination directory and move source to it
+                    Directory.Move("kh2", "data\\kh2");
+                    // System.IO.File.Move("mods-kh2.txt", "mods.txt"); Rename Files
+                    // Locate "mods-manager.yml" "gameDataPath:" value (if mods-manager.yml does not exist, do nothing)
+                    // Create "kh2" folder if it does not already exist in that directory, and move all files from gameDataPath into said folder (assuming they are using default location)
+                    // Empty current "mod" folder since files will be leftover otherwise
+                    // Locate "pcReleaseLocation" in mods-manager.yml and find "luabackend.toml" file, find
+                }
+                else if (ConfigurationService.Pcsx2Location != null)
+                {
+                    // Locate "mods-manager.yml" "gameDataPath:" value (if mods-manager.yml does not exist, do nothing)
+                    // Create "kh2" folder if it does not already exist in that directory, and move all files from gameDataPath into said folder (assuming they are using default location)
+                    // Empty current "mod" folder since files will be leftover otherwise
+                    // Locate "pcsx2Location" in mods-manager.yml and find "luabackend.toml" file, find
+                }
+            WizardCommand.Execute(null);
         }
 
         public void CloseAllWindows()
