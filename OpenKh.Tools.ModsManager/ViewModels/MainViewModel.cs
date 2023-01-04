@@ -18,6 +18,7 @@ using System.Windows;
 using Xe.Tools;
 using Xe.Tools.Wpf.Commands;
 using static OpenKh.Tools.ModsManager.Helpers;
+using System.Text;
 
 namespace OpenKh.Tools.ModsManager.ViewModels
 {
@@ -414,26 +415,79 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             FetchUpdates();
 
             if (ConfigurationService.WizardVersionNumber < _wizardVersionNumber)
-                if (ConfigurationService.PcReleaseLocation != null)
+            {
+                ///---Everything after this to be removed at later date
+                if(Directory.Exists("data") == false)
                 {
-                    // ConfigurationService.GameDataLocation = StoragePath + "\\kh2"; Edit mod-manager.yml configurations
-                    // Directory.CreateDirectory(StoragePath + "\\kh2"); // Create Directories
-                    Directory.Move("data", "kh2"); // Directory.Move(sourceDir, destinationDir) Create destination directory and move source to it
-                    Directory.Move("kh2", "data\\kh2");
-                    // System.IO.File.Move("mods-kh2.txt", "mods.txt"); Rename Files
-                    // Locate "mods-manager.yml" "gameDataPath:" value (if mods-manager.yml does not exist, do nothing)
-                    // Create "kh2" folder if it does not already exist in that directory, and move all files from gameDataPath into said folder (assuming they are using default location)
-                    // Empty current "mod" folder since files will be leftover otherwise
-                    // Locate "pcReleaseLocation" in mods-manager.yml and find "luabackend.toml" file, find
+                    MessageBox.Show("This update to OpenKH includes some changes to the program's folder structure. We noticed that you are not using the default extraction location so we are unable to fix this automatically for you. \nPlease complete the setup wizard again and re-extract your game files.", "Thanks for Updating!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 }
-                else if (ConfigurationService.Pcsx2Location != null)
+                if (ConfigurationService.PcReleaseLocation != null | ConfigurationService.Pcsx2Location != null)
                 {
-                    // Locate "mods-manager.yml" "gameDataPath:" value (if mods-manager.yml does not exist, do nothing)
-                    // Create "kh2" folder if it does not already exist in that directory, and move all files from gameDataPath into said folder (assuming they are using default location)
-                    // Empty current "mod" folder since files will be leftover otherwise
-                    // Locate "pcsx2Location" in mods-manager.yml and find "luabackend.toml" file, find
+                    //Rename data folder to kh2, create new empty data folder, place kh2 folder into data folder (Fix users default extraction directory)
+                    if (Directory.Exists("kh2") == false)
+                    {
+                        if (Directory.Exists("data") == true && Directory.Exists("data\\kh2") == false)
+                        {
+                            Directory.Move("data", "kh2");
+                            Directory.CreateDirectory("data");
+                            Directory.Move("kh2", "data\\kh2");
+                        }
+                    }
+                    //Rename mod folder to kh2, create new empty mod folder, place kh2 folder into mod folder (Fix users 'mod' directory)
+                    if (Directory.Exists("kh2") == false)
+                    {
+                        if (Directory.Exists("mod") == true && Directory.Exists("mod\\kh2") == false)
+                        {
+                            Directory.Move("mod", "kh2");
+                            Directory.CreateDirectory("mod");
+                            Directory.Move("kh2", "mod\\kh2");
+                        }
+                    }
+                    //Clean out new mods folder except for users current mods, Rename mods folder to kh2, create new empty mods folder, place kh2 folder into mods folder (Fix users 'mods' directory)
+                    if(Directory.EnumerateDirectories("mods\\bbs").Any() == false)
+                        Directory.Delete("mods\\bbs");
+                    if (Directory.EnumerateDirectories("mods\\kh1").Any() == false)
+                        Directory.Delete("mods\\kh1");
+                    if (Directory.EnumerateDirectories("mods\\kh2").Any() == false)
+                        Directory.Delete("mods\\kh2");
+                    if (Directory.EnumerateDirectories("mods\\Recom").Any() == false)
+                        Directory.Delete("mods\\Recom");
+
+                    if (Directory.Exists("kh2") == false)
+                    {
+                        if (Directory.Exists("mods") == true && Directory.Exists("mods\\kh2") == false)
+                        {
+                            Directory.Move("mods", "kh2");
+                            Directory.CreateDirectory("mods");
+                            Directory.Move("kh2", "mods\\kh2");
+                        }
+                    }
+                    Directory.CreateDirectory("mods\\bbs");
+                    Directory.CreateDirectory("mods\\kh1");
+                    Directory.CreateDirectory("mods\\Recom");
+                    //Rename mods.txt to mods-KH2.txt
+                    if (File.Exists("mods.txt") == true)
+                    {
+                        File.Move("mods.txt", "mods-KH2.txt");
+                    }
+                    // Delete Luabackend.toml from game install folder, place new Luabackend.toml file with updated scripts locations (Fix users luabackend.toml scripts location)
+                    if(ConfigurationService.PcReleaseLocation != null)
+                    {
+                        string StoragePath_Fixed = StoragePath;
+                        StoragePath_Fixed = StoragePath_Fixed.Replace("\\", "\\\\");
+                        string[] lines = { "[kh1]", "scripts = [{ path = \"scripts/kh1/\", relative = true }]", "base = 0x3A0606", "thread_struct = 0x22B7280", "exe = \"KINGDOM HEARTS FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh2]", "scripts = [{ path = \"scripts/kh2/\", relative = true }, {path = \"" + StoragePath_Fixed + "\\\\mod\\\\scripts\\\\kh2\",relative = false}]", "base = 0x56454E", "thread_struct = 0x89E9A0", "exe = \"KINGDOM HEARTS II FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[bbs]", "scripts = [{ path = \"scripts/bbs/\", relative = true }]", "base = 0x60E334", "thread_struct = 0x110B5970", "exe = \"KINGDOM HEARTS Birth by Sleep FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[recom]", "scripts = [{ path = \"scripts/recom/\", relative = true }]", "base = 0x4E4660", "thread_struct = 0xBF7A80", "exe = \"KINGDOM HEARTS Re_Chain of Memories.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh3d]", "scripts = [{ path = \"scripts/kh3d/\", relative = true }]", "base = 0x770E4A", "thread_struct = 0x14DA6F20", "exe = \"KINGDOM HEARTS Dream Drop Distance.exe\"", "game_docs = \"KINGDOM HEARTS HD 2.8 Final Chapter Prologue\"" };
+                        using StreamWriter file = new(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml");
+                        foreach (string line in lines)
+                        {
+                            file.WriteLineAsync(line);
+                        }
+                    }
+                    ReloadModsList();
                 }
-            WizardCommand.Execute(null);
+                //---Everything before this to be removed at later date
+
+                WizardCommand.Execute(null);
+            }
         }
 
         public void CloseAllWindows()
