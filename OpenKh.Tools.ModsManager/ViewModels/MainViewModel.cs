@@ -419,7 +419,12 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 ///---Everything after this to be removed at later date
                 if(Directory.Exists("data") == false)
                 {
-                    MessageBox.Show("This update to OpenKH includes some changes to the program's folder structure. We noticed that you are not using the default extraction location so we are unable to fix this automatically for you. \nPlease complete the setup wizard again and re-extract your game files.", "Thanks for Updating!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show("This update to OpenKH includes some changes to the program's folder structure. We noticed that you are not using the default extraction location so we are unable to fix this automatically for you." +
+                        "\nPlease complete the setup wizard again and re-extract your game files.", "Thanks for Updating!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                }
+                else if (Directory.Exists("data") == true)
+                {
+                    MessageBox.Show("Thanks for updating the mod manager! Be sure to complete the setup wizard again in order to update your panacea installation.", "Thanks for Updating!", MessageBoxButton.OK);
                 }
                 if (ConfigurationService.PcReleaseLocation != null | ConfigurationService.Pcsx2Location != null)
                 {
@@ -462,6 +467,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                             Directory.Move("kh2", "mods\\kh2");
                         }
                     }
+
                     Directory.CreateDirectory("mods\\bbs");
                     Directory.CreateDirectory("mods\\kh1");
                     Directory.CreateDirectory("mods\\Recom");
@@ -475,7 +481,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     {
                         string StoragePath_Fixed = StoragePath;
                         StoragePath_Fixed = StoragePath_Fixed.Replace("\\", "\\\\");
-                        string[] lines = { "[kh1]", "scripts = [{ path = \"scripts/kh1/\", relative = true }]", "base = 0x3A0606", "thread_struct = 0x22B7280", "exe = \"KINGDOM HEARTS FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh2]", "scripts = [{ path = \"scripts/kh2/\", relative = true }, {path = \"" + StoragePath_Fixed + "\\\\mod\\\\scripts\\\\kh2\",relative = false}]", "base = 0x56454E", "thread_struct = 0x89E9A0", "exe = \"KINGDOM HEARTS II FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[bbs]", "scripts = [{ path = \"scripts/bbs/\", relative = true }]", "base = 0x60E334", "thread_struct = 0x110B5970", "exe = \"KINGDOM HEARTS Birth by Sleep FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[recom]", "scripts = [{ path = \"scripts/recom/\", relative = true }]", "base = 0x4E4660", "thread_struct = 0xBF7A80", "exe = \"KINGDOM HEARTS Re_Chain of Memories.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh3d]", "scripts = [{ path = \"scripts/kh3d/\", relative = true }]", "base = 0x770E4A", "thread_struct = 0x14DA6F20", "exe = \"KINGDOM HEARTS Dream Drop Distance.exe\"", "game_docs = \"KINGDOM HEARTS HD 2.8 Final Chapter Prologue\"" };
+                        string[] lines = { "[kh1]", "scripts = [{ path = \"scripts/kh1/\", relative = true }]", "base = 0x3A0606", "thread_struct = 0x22B7280", "exe = \"KINGDOM HEARTS FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh2]", "scripts = [{ path = \"scripts/kh2/\", relative = true }, {path = \"" + StoragePath_Fixed + "\\\\mod\\\\kh2\\\\scripts\",relative = false}]", "base = 0x56454E", "thread_struct = 0x89E9A0", "exe = \"KINGDOM HEARTS II FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[bbs]", "scripts = [{ path = \"scripts/bbs/\", relative = true }]", "base = 0x60E334", "thread_struct = 0x110B5970", "exe = \"KINGDOM HEARTS Birth by Sleep FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[recom]", "scripts = [{ path = \"scripts/recom/\", relative = true }]", "base = 0x4E4660", "thread_struct = 0xBF7A80", "exe = \"KINGDOM HEARTS Re_Chain of Memories.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh3d]", "scripts = [{ path = \"scripts/kh3d/\", relative = true }]", "base = 0x770E4A", "thread_struct = 0x14DA6F20", "exe = \"KINGDOM HEARTS Dream Drop Distance.exe\"", "game_docs = \"KINGDOM HEARTS HD 2.8 Final Chapter Prologue\"" };
                         using StreamWriter file = new(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml");
                         foreach (string line in lines)
                         {
@@ -484,7 +490,6 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     }
                     ReloadModsList();
                 }
-                //---Everything before this to be removed at later date
 
                 WizardCommand.Execute(null);
             }
