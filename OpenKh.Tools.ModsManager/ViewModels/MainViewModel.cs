@@ -51,7 +51,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             "bbs",
             "Recom"
         };
-        private int _wizardVersionNumber = 3;
+        private int _wizardVersionNumber = 2;
         private string[] executable = new string[]
         {
             "KINGDOM HEARTS II FINAL MIX.exe",
@@ -417,10 +417,10 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             if (ConfigurationService.WizardVersionNumber < _wizardVersionNumber)
             {
                 ///---Everything after this to be removed at later date
-                if(Directory.Exists("data") == false)
+                if (Directory.Exists("data") == false)
                 {
                     MessageBox.Show("This update to OpenKH includes some changes to the program's folder structure. We noticed that you are not using the default extraction location so we are unable to fix this automatically for you." +
-                        "\nPlease complete the setup wizard again and re-extract your game files.", "Thanks for Updating!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        "\nPlease complete the setup wizard again to update panacea and re-extract your game files.", "Thanks for Updating!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                 }
                 else if (Directory.Exists("data") == true)
                 {
@@ -449,7 +449,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                         }
                     }
                     //Clean out new mods folder except for users current mods, Rename mods folder to kh2, create new empty mods folder, place kh2 folder into mods folder (Fix users 'mods' directory)
-                    if(Directory.EnumerateDirectories("mods\\bbs").Any() == false)
+                    if (Directory.EnumerateDirectories("mods\\bbs").Any() == false)
                         Directory.Delete("mods\\bbs");
                     if (Directory.EnumerateDirectories("mods\\kh1").Any() == false)
                         Directory.Delete("mods\\kh1");
@@ -468,16 +468,28 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                         }
                     }
 
-                    Directory.CreateDirectory("mods\\bbs");
-                    Directory.CreateDirectory("mods\\kh1");
-                    Directory.CreateDirectory("mods\\Recom");
+                    if (Directory.Exists("mods\\bbs") == false)
+                    {
+                        Directory.CreateDirectory("mods\\bbs");
+                    }
+                    if (Directory.Exists("mods\\kh1") == false)
+                    {
+                        Directory.CreateDirectory("mods\\kh1");
+                    }
+                    if (Directory.Exists("mods\\Recom") == false)
+                    {
+                        Directory.CreateDirectory("mods\\Recom");
+                    }
                     //Rename mods.txt to mods-KH2.txt
                     if (File.Exists("mods.txt") == true)
                     {
-                        File.Move("mods.txt", "mods-KH2.txt");
+                        if (Directory.Exists("mods-KH2.txt") == false)
+                        {
+                            File.Move("mods.txt", "mods-KH2.txt");
+                        }
                     }
-                    // Delete Luabackend.toml from game install folder, place new Luabackend.toml file with updated scripts locations (Fix users luabackend.toml scripts location)
-                    if(ConfigurationService.PcReleaseLocation != null)
+                    // Delete(Replaces) Luabackend.toml from game install folder, place new Luabackend.toml file with updated scripts locations (Fix users luabackend.toml scripts location)
+                    if (ConfigurationService.PcReleaseLocation != null & Directory.Exists(ConfigurationService.PcReleaseLocation) == true)
                     {
                         string StoragePath_Fixed = StoragePath;
                         StoragePath_Fixed = StoragePath_Fixed.Replace("\\", "\\\\");
@@ -490,7 +502,6 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     }
                     ReloadModsList();
                 }
-
                 WizardCommand.Execute(null);
             }
         }
