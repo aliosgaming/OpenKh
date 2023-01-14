@@ -446,7 +446,13 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                             Directory.Move(Path.Combine(path, "gumibattle"), Path.Combine(newpath, "gumibattle"));
                             Directory.Move(Path.Combine(path, "gumiblock"), Path.Combine(newpath, "gumiblock"));
                             Directory.Move(Path.Combine(path, "gumimenu"), Path.Combine(newpath, "gumimenu"));
-                            Directory.Move(Path.Combine(path, "ICON"), Path.Combine(newpath, "ICON"));
+                            try
+                            {
+                                Directory.Move(Path.Combine(path, "ICON"), Path.Combine(newpath, "ICON"));
+                                Directory.Move(Path.Combine(path, "remastered"), Path.Combine(newpath, "remastered"));
+                                Directory.Move(Path.Combine(path, "save_image"), Path.Combine(newpath, "save_image"));
+                            }
+                            catch { };                                
                             Directory.Move(Path.Combine(path, "itempic"), Path.Combine(newpath, "itempic"));
                             Directory.Move(Path.Combine(path, "libretto"), Path.Combine(newpath, "libretto"));
                             Directory.Move(Path.Combine(path, "limit"), Path.Combine(newpath, "limit"));
@@ -458,8 +464,6 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                             Directory.Move(Path.Combine(path, "msn"), Path.Combine(newpath, "msn"));
                             Directory.Move(Path.Combine(path, "npack"), Path.Combine(newpath, "npack"));
                             Directory.Move(Path.Combine(path, "obj"), Path.Combine(newpath, "obj"));
-                            Directory.Move(Path.Combine(path, "remastered"), Path.Combine(newpath, "remastered"));
-                            Directory.Move(Path.Combine(path, "save_image"), Path.Combine(newpath, "save_image"));
                             Directory.Move(Path.Combine(path, "se"), Path.Combine(newpath, "se"));
                             Directory.Move(Path.Combine(path, "vagstream"), Path.Combine(newpath, "vagstream"));
                             Directory.Move(Path.Combine(path, "voice"), Path.Combine(newpath, "voice"));
@@ -527,6 +531,25 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                             Path.Combine(path,"MHelpText.bin"),
                             Path.Combine(path,"radar.tm2"),
                             Path.Combine(path,"THelpText.bin"),
+                            Path.Combine(path,"000al.idx"),
+                            Path.Combine(path,"000bb.idx"),
+                            Path.Combine(path,"000ca.idx"),
+                            Path.Combine(path,"000dc.idx"),
+                            Path.Combine(path,"000di.idx"),
+                            Path.Combine(path,"000eh.idx"),
+                            Path.Combine(path,"000es.idx"),
+                            Path.Combine(path,"000gumi.idx"),
+                            Path.Combine(path,"000hb.idx"),
+                            Path.Combine(path,"000he.idx"),
+                            Path.Combine(path,"000lk.idx"),
+                            Path.Combine(path,"000lm.idx"),
+                            Path.Combine(path,"000mu.idx"),
+                            Path.Combine(path,"000nm.idx"),
+                            Path.Combine(path,"000po.idx"),
+                            Path.Combine(path,"000tr.idx"),
+                            Path.Combine(path,"000tt.idx"),
+                            Path.Combine(path,"000wi.idx"),
+                            Path.Combine(path,"000wm.idx"),
 
                         };
                             foreach (string s in files)
