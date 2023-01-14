@@ -42,6 +42,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         private bool _panaceaInstalled;
         private bool _devView;
         private string _launchGame = "kh2";
+        private static string StoragePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         private List<string> _supportedGames = new List<string>()
         {
             "kh2",
@@ -413,7 +414,191 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             FetchUpdates();
 
             if (ConfigurationService.WizardVersionNumber < _wizardVersionNumber)
+            {
+                var path = ConfigurationService.GameDataLocation;
+                var newpath = Path.Combine(path, "kh2");
+                ///---Everything after this to be removed at later date
+                if (!Directory.Exists(path))
+                {
+                    MessageBox.Show("Cannot find valid KH2 Extraction" +
+                        "\nPlease complete the setup wizard to update panacea and re-extract your game files.", "Thanks for Updating!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                }
+                else if (Directory.Exists(path))
+                {
+                    MessageBox.Show("Thanks for updating the mod manager! Be sure to complete the setup wizard again in order to update your panacea installation.", "Thanks for Updating!", MessageBoxButton.OK);
+                }
+                if (ConfigurationService.PcReleaseLocation != null | ConfigurationService.Pcsx2Location != null)
+                {
+                    //Rename data folder to kh2, create new empty data folder, place kh2 folder into data folder (Fix users default extraction directory)
+                    if (!Directory.Exists(newpath))
+                    {
+                        if (Directory.Exists(path) && !Directory.Exists(newpath))
+                        {
+                            Directory.CreateDirectory(Path.Combine(newpath));
+                            Directory.Move(Path.Combine(path, "anm"), Path.Combine(newpath, "anm"));
+                            Directory.Move(Path.Combine(path, "ard"), Path.Combine(newpath, "ard"));
+                            Directory.Move(Path.Combine(path, "bgm"), Path.Combine(newpath, "bgm"));
+                            Directory.Move(Path.Combine(path, "dbg"), Path.Combine(newpath, "dbg"));
+                            Directory.Move(Path.Combine(path, "effect"), Path.Combine(newpath, "effect"));
+                            Directory.Move(Path.Combine(path, "event"), Path.Combine(newpath, "event"));
+                            Directory.Move(Path.Combine(path, "field2d"), Path.Combine(newpath, "field2d"));
+                            Directory.Move(Path.Combine(path, "file"), Path.Combine(newpath, "file"));
+                            Directory.Move(Path.Combine(path, "gumibattle"), Path.Combine(newpath, "gumibattle"));
+                            Directory.Move(Path.Combine(path, "gumiblock"), Path.Combine(newpath, "gumiblock"));
+                            Directory.Move(Path.Combine(path, "gumimenu"), Path.Combine(newpath, "gumimenu"));
+                            Directory.Move(Path.Combine(path, "ICON"), Path.Combine(newpath, "ICON"));
+                            Directory.Move(Path.Combine(path, "itempic"), Path.Combine(newpath, "itempic"));
+                            Directory.Move(Path.Combine(path, "libretto"), Path.Combine(newpath, "libretto"));
+                            Directory.Move(Path.Combine(path, "limit"), Path.Combine(newpath, "limit"));
+                            Directory.Move(Path.Combine(path, "magic"), Path.Combine(newpath, "magic"));
+                            Directory.Move(Path.Combine(path, "map"), Path.Combine(newpath, "map"));
+                            Directory.Move(Path.Combine(path, "menu"), Path.Combine(newpath, "menu"));
+                            Directory.Move(Path.Combine(path, "minigame"), Path.Combine(newpath, "minigame"));
+                            Directory.Move(Path.Combine(path, "msg"), Path.Combine(newpath, "msg"));
+                            Directory.Move(Path.Combine(path, "msn"), Path.Combine(newpath, "msn"));
+                            Directory.Move(Path.Combine(path, "npack"), Path.Combine(newpath, "npack"));
+                            Directory.Move(Path.Combine(path, "obj"), Path.Combine(newpath, "obj"));
+                            Directory.Move(Path.Combine(path, "remastered"), Path.Combine(newpath, "remastered"));
+                            Directory.Move(Path.Combine(path, "save_image"), Path.Combine(newpath, "save_image"));
+                            Directory.Move(Path.Combine(path, "se"), Path.Combine(newpath, "se"));
+                            Directory.Move(Path.Combine(path, "vagstream"), Path.Combine(newpath, "vagstream"));
+                            Directory.Move(Path.Combine(path, "voice"), Path.Combine(newpath, "voice"));
+                            List<string> files = new List<string>
+                        {
+                            Path.Combine(path,"00areainfo.bin"),
+                            Path.Combine(path,"00battle.bin"),
+                            Path.Combine(path,"00common.bdx"),
+                            Path.Combine(path,"00effect.bar"),
+                            Path.Combine(path,"00font.bar"),
+                            Path.Combine(path,"00fontimg.bar"),
+                            Path.Combine(path,"00localset.bin"),
+                            Path.Combine(path,"00objentry.bin"),
+                            Path.Combine(path,"00place.bin"),
+                            Path.Combine(path,"00progress.bin"),
+                            Path.Combine(path,"00sysrc.bar"),
+                            Path.Combine(path,"00system.bin"),
+                            Path.Combine(path,"00worldpoint.bin"),
+                            Path.Combine(path,"03system.bin"),
+                            Path.Combine(path,"07localset.bin"),
+                            Path.Combine(path,"10font.bar"),
+                            Path.Combine(path,"11fontimg.bar"),
+                            Path.Combine(path,"12soundinfo.bar"),
+                            Path.Combine(path,"13libretto.bin"),
+                            Path.Combine(path,"14mission.bar"),
+                            Path.Combine(path,"14mission.bin"),
+                            Path.Combine(path,"15jigsaw.bin"),
+                            Path.Combine(path,"50gb_effect.bar"),
+                            Path.Combine(path,"50gumientry.bin"),
+                            Path.Combine(path,"50wmentry.bin"),
+                            Path.Combine(path,"50worldmap.bin"),
+                            Path.Combine(path,"60gb_effect.bar"),
+                            Path.Combine(path,"70landing.bar"),
+                            Path.Combine(path,"99motion.dbg"),
+                            Path.Combine(path,"backup_icon0.png"),
+                            Path.Combine(path,"dk_mask.tm2"),
+                            Path.Combine(path,"eventviewer.bar"),
+                            Path.Combine(path,"GHelpText.bin"),
+                            Path.Combine(path,"icon0.png"),
+                            Path.Combine(path,"icon0_e.png"),
+                            Path.Combine(path,"icon0_jp.png"),
+                            Path.Combine(path,"icon0_n.png"),
+                            Path.Combine(path,"item-011.imd"),
+                            Path.Combine(path,"KH2.IDX"),
+                            Path.Combine(path,"KHHD2.5.config"),
+                            Path.Combine(path,"KHHD2.8.config"),
+                            Path.Combine(path,"libretto-al.bar"),
+                            Path.Combine(path,"libretto-bb.bar"),
+                            Path.Combine(path,"libretto-ca.bar"),
+                            Path.Combine(path,"libretto-dc.bar"),
+                            Path.Combine(path,"libretto-di.bar"),
+                            Path.Combine(path,"libretto-eh.bar"),
+                            Path.Combine(path,"libretto-es.bar"),
+                            Path.Combine(path,"libretto-hb.bar"),
+                            Path.Combine(path,"libretto-he.bar"),
+                            Path.Combine(path,"libretto-lk.bar"),
+                            Path.Combine(path,"libretto-lm.bar"),
+                            Path.Combine(path,"libretto-mu.bar"),
+                            Path.Combine(path,"libretto-nm.bar"),
+                            Path.Combine(path,"libretto-po.bar"),
+                            Path.Combine(path,"libretto-tr.bar"),
+                            Path.Combine(path,"libretto-tt.bar"),
+                            Path.Combine(path,"libretto-wi.bar"),
+                            Path.Combine(path,"libretto-wm.bar"),
+                            Path.Combine(path,"MHelpText.bin"),
+                            Path.Combine(path,"radar.tm2"),
+                            Path.Combine(path,"THelpText.bin"),
+
+                        };
+                            foreach (string s in files)
+                            {
+                                if (File.Exists(s))
+                                    File.Move(s, Path.Combine(newpath, Path.GetFileName(s)));
+                            }
+
+                        }
+
+                    }
+                    //Remove mod folder with update
+                    if (Directory.Exists("mod"))
+                    {
+                        Directory.Delete("mod");
+                    }
+                    //Clean out new mods folder except for users current mods, Rename mods folder to kh2, create new empty mods folder, place kh2 folder into mods folder (Fix users 'mods' directory)
+                    if (!Directory.EnumerateDirectories("mods\\bbs").Any())
+                        Directory.Delete("mods\\bbs");
+                    if (!Directory.EnumerateDirectories("mods\\kh1").Any())
+                        Directory.Delete("mods\\kh1");
+                    if (!Directory.EnumerateDirectories("mods\\kh2").Any())
+                        Directory.Delete("mods\\kh2");
+                    if (!Directory.EnumerateDirectories("mods\\Recom").Any())
+                        Directory.Delete("mods\\Recom");
+
+                    if (!Directory.Exists("kh2"))
+                    {
+                        if (Directory.Exists("mods") && !Directory.Exists("mods\\kh2"))
+                        {
+                            Directory.Move("mods", "kh2");
+                            Directory.CreateDirectory("mods");
+                            Directory.Move("kh2", "mods\\kh2");
+                        }
+                    }
+
+                    if (!Directory.Exists("mods\\bbs"))
+                    {
+                        Directory.CreateDirectory("mods\\bbs");
+                    }
+                    if (!Directory.Exists("mods\\kh1"))
+                    {
+                        Directory.CreateDirectory("mods\\kh1");
+                    }
+                    if (!Directory.Exists("mods\\Recom"))
+                    {
+                        Directory.CreateDirectory("mods\\Recom");
+                    }
+                    //Rename mods.txt to mods-KH2.txt
+                    if (File.Exists("mods.txt"))
+                    {
+                        if (!Directory.Exists("mods-KH2.txt"))
+                        {
+                            File.Move("mods.txt", "mods-KH2.txt");
+                        }
+                    }
+                    // Delete(Replaces) Luabackend.toml from game install folder, place new Luabackend.toml file with updated scripts locations (Fix users luabackend.toml scripts location) if use has Luabackend.TOML
+                    if (ConfigurationService.PcReleaseLocation != null && Directory.Exists(ConfigurationService.PcReleaseLocation) && File.Exists(Path.Combine(ConfigurationService.PcReleaseLanguage, "Luabackend.toml")))
+                    {
+                        string StoragePath_Fixed = StoragePath;
+                        StoragePath_Fixed = StoragePath_Fixed.Replace("\\", "\\\\");
+                        string[] lines = { "[kh1]", "scripts = [{ path = \"scripts/kh1/\", relative = true }]", "base = 0x3A0606", "thread_struct = 0x22B7280", "exe = \"KINGDOM HEARTS FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh2]", "scripts = [{ path = \"scripts/kh2/\", relative = true }, {path = \"" + StoragePath_Fixed + "\\\\mod\\\\kh2\\\\scripts\",relative = false}]", "base = 0x56454E", "thread_struct = 0x89E9A0", "exe = \"KINGDOM HEARTS II FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[bbs]", "scripts = [{ path = \"scripts/bbs/\", relative = true }]", "base = 0x60E334", "thread_struct = 0x110B5970", "exe = \"KINGDOM HEARTS Birth by Sleep FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[recom]", "scripts = [{ path = \"scripts/recom/\", relative = true }]", "base = 0x4E4660", "thread_struct = 0xBF7A80", "exe = \"KINGDOM HEARTS Re_Chain of Memories.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh3d]", "scripts = [{ path = \"scripts/kh3d/\", relative = true }]", "base = 0x770E4A", "thread_struct = 0x14DA6F20", "exe = \"KINGDOM HEARTS Dream Drop Distance.exe\"", "game_docs = \"KINGDOM HEARTS HD 2.8 Final Chapter Prologue\"" };
+                        using StreamWriter file = new(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml");
+                        foreach (string line in lines)
+                        {
+                            file.WriteLineAsync(line);
+                        }
+                    }
+                    ReloadModsList();
+                }
                 WizardCommand.Execute(null);
+            }
         }
 
         public void CloseAllWindows()
