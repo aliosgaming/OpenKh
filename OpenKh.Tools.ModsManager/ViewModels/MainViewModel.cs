@@ -428,6 +428,10 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 }
                 if (ConfigurationService.PcReleaseLocation != null | ConfigurationService.Pcsx2Location != null)
                 {
+                    if (Directory.Exists("kh2") == true)
+                    {
+                        Directory.Move("kh2", "kh2-namechange-temp");
+                    }
                     //Rename data folder to kh2, create new empty data folder, place kh2 folder into data folder (Fix users default extraction directory)
                     if (Directory.Exists("kh2") == false)
                     {
@@ -489,7 +493,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                         }
                     }
                     // Delete(Replaces) Luabackend.toml from game install folder, place new Luabackend.toml file with updated scripts locations (Fix users luabackend.toml scripts location)
-                    if (ConfigurationService.PcReleaseLocation != null & Directory.Exists(ConfigurationService.PcReleaseLocation) == true)
+                    if (ConfigurationService.PcReleaseLocation != null & Directory.Exists(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml") == true)
                     {
                         string StoragePath_Fixed = StoragePath;
                         StoragePath_Fixed = StoragePath_Fixed.Replace("\\", "\\\\");
@@ -500,7 +504,15 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                             file.WriteLineAsync(line);
                         }
                     }
-                    ReloadModsList();
+                    if (Directory.Exists("kh2-namechange-temp") == true)
+                    {
+                        Directory.Move("kh2-namechange-temp", "kh2");
+                    }
+                    try
+                    {
+                        ReloadModsList();
+                    }
+                    catch (Exception e) { MessageBox.Show("Mod Manager failed to reload mods list!", "Error!", MessageBoxButton.OK); }
                 }
                 WizardCommand.Execute(null);
             }
