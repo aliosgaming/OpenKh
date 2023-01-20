@@ -422,12 +422,12 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     var path = ConfigurationService.GameDataLocation;
                     var newpath = Path.Combine(path, "kh2");
 
-                    if (Directory.Exists("data") == false)
+                    if (Directory.Exists(path) == false)
                     {
                         MessageBox.Show("Cannot find valid KH2 Extraction" +
-                        "\nPlease complete the setup wizard to update panacea and re-extract your game files.", "Thanks for Updating!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        "\nPlease complete the setup wizard to update panacea and re-extract your game files.", "Warning!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     }
-                    else if (Directory.Exists("data") == true)
+                    else
                     {
                         MessageBox.Show("Thanks for updating the mod manager! Be sure to complete the setup wizard again in order to update your panacea installation.", "Thanks for Updating!", MessageBoxButton.OK);
                     }
@@ -622,7 +622,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                         }
                     }
                     // Delete(Replaces) Luabackend.toml from game install folder, place new Luabackend.toml file with updated scripts locations (Fix users luabackend.toml scripts location)
-                    if (ConfigurationService.PcReleaseLocation != null & Directory.Exists(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml") == true)
+                    if (ConfigurationService.PcReleaseLocation != null & File.Exists(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml") == true)
                     {
                         string StoragePath_Fixed = StoragePath;
                         StoragePath_Fixed = StoragePath_Fixed.Replace("\\", "\\\\");
