@@ -590,7 +590,6 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                         if (Directory.EnumerateDirectories("mods\\bbs").Any() == false)
                         {
                             Directory.Delete("mods\\bbs");
-                            
                         }
 
                     }
