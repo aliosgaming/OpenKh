@@ -425,7 +425,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     if (Directory.Exists(path) == false)
                     {
                         MessageBox.Show("Cannot find valid KH2 Extraction" +
-                        "\nPlease complete the setup wizard to update panacea and re-extract your game files.", "Warning!", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        "\nPlease complete the setup wizard to update panacea and re-extract your game files.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     }
                     else
                     {
@@ -571,33 +571,65 @@ namespace OpenKh.Tools.ModsManager.ViewModels
 
                     }
 
-                    //Rename mod folder to kh2, create new empty mod folder, place kh2 folder into mod folder (Fix users 'mod' directory)
-                    if (Directory.Exists("kh2") == false)
+                    //Enumerate files and directories inside mod folder, delete them to empty folder
+                    if (Directory.Exists("mod") == true)
                     {
-                        if (Directory.Exists("mod") == true && Directory.Exists("mod\\kh2") == false)
+                        DirectoryInfo modDir = new DirectoryInfo("mod");
+                        foreach (FileInfo file in modDir.EnumerateFiles())
                         {
-                            Directory.Move("mod", "kh2");
-                            Directory.CreateDirectory("mod");
-                            Directory.Move("kh2", "mod\\kh2");
+                            file.Delete();
+                        }
+                        foreach (DirectoryInfo dir in modDir.EnumerateDirectories())
+                        {
+                            dir.Delete(true);
                         }
                     }
-                    //Clean out new mods folder except for users current mods, Rename mods folder to kh2, create new empty mods folder, place kh2 folder into mods folder (Fix users 'mods' directory)
-                    if (Directory.EnumerateDirectories("mods\\bbs").Any() == false)
-                        Directory.Delete("mods\\bbs");
-                    if (Directory.EnumerateDirectories("mods\\kh1").Any() == false)
-                        Directory.Delete("mods\\kh1");
-                    if (Directory.EnumerateDirectories("mods\\kh2").Any() == false)
-                        Directory.Delete("mods\\kh2");
-                    if (Directory.EnumerateDirectories("mods\\Recom").Any() == false)
-                        Directory.Delete("mods\\Recom");
+                    //Clean out new mods folder except for users current mods, enumerate files in mods folder, move all files and folders into kh2 sub folder (Fix users 'mods' directory)
+                    if (Directory.Exists("mods\\bbs") == true)
+                    {
+                        if (Directory.EnumerateDirectories("mods\\bbs").Any() == false)
+                        {
+                            Directory.Delete("mods\\bbs");
+                            
+                        }
 
+                    }
+                    if (Directory.Exists("mods\\kh1") == true)
+                    {
+                        if (Directory.EnumerateDirectories("mods\\kh1").Any() == false)
+                        {
+                            Directory.Delete("mods\\kh1");
+                        }
+                    }
+                    if (Directory.Exists("mods\\Recom") == true)
+                    {
+                        if (Directory.EnumerateDirectories("mods\\Recom").Any() == false)
+                        {
+                            Directory.Delete("mods\\Recom");
+                        }
+                    }
+                    if (Directory.Exists("mods\\kh2") == true)
+                    {
+                        if (Directory.EnumerateDirectories("mods\\kh2").Any() == false)
+                        {
+                            Directory.Delete("mods\\kh2");
+                        }
+                    }
                     if (Directory.Exists("kh2") == false)
                     {
                         if (Directory.Exists("mods") == true && Directory.Exists("mods\\kh2") == false)
                         {
-                            Directory.Move("mods", "kh2");
-                            Directory.CreateDirectory("mods");
-                            Directory.Move("kh2", "mods\\kh2");
+                            // Make a reference to a directory.
+                            DirectoryInfo di = new DirectoryInfo("mods");
+
+                            // Get a reference to each directory in that directory.
+                            DirectoryInfo[] diArr = di.GetDirectories();
+
+                            Directory.CreateDirectory("mods\\kh2");
+
+                            //Move each directory into kh2 sub folder.
+                            foreach (DirectoryInfo dri in diArr)
+                                Directory.Move("mods\\" + dri.Name, "mods\\kh2\\" + dri.Name);
                         }
                     }
 
@@ -641,7 +673,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     {
                         ReloadModsList();
                     }
-                    catch (Exception e) { MessageBox.Show("Mod Manager failed to reload mods list! Contact support in the KH2 Randomizer Discord for help", "Error!", MessageBoxButton.OK); }
+                    catch (Exception e) { MessageBox.Show("Mod Manager failed to reload mods list! Contact support in the KH2 Randomizer Discord for help", "Error", MessageBoxButton.OK); }
                 }
                 WizardCommand.Execute(null);
             }
