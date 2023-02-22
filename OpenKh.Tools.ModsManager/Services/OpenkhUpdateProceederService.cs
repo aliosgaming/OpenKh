@@ -19,46 +19,80 @@ namespace OpenKh.Tools.ModsManager.Services
             var tempId = Guid.NewGuid().ToString("N");
             var tempZipFile = Path.Combine(Path.GetTempPath(), $"openkh-{tempId}.zip");
 
-            using (var client = new HttpClient())
+            try
             {
-                using (var zipOutput = File.Create(tempZipFile))
+                using (var client = new HttpClient())
                 {
-                    using (var resp = await client.GetAsync(downloadZipUrl, cancellation))
+                    using (var zipOutput = File.Create(tempZipFile))
                     {
-                        var maxLen = resp.Content.Headers.ContentLength;
-                        var zipInput = await resp.Content.ReadAsStreamAsync();
-                        await CopyToAsyncWithProgress(zipInput, zipOutput, maxLen, progress, cancellation);
+                        using (var resp = await client.GetAsync(downloadZipUrl, cancellation))
+                        {
+                            var maxLen = resp.Content.Headers.ContentLength;
+                            var zipInput = await resp.Content.ReadAsStreamAsync();
+                            await CopyToAsyncWithProgress(zipInput, zipOutput, maxLen, progress, cancellation);
+                        }
+                    }
+                }
+
+                var tempZipDir = Path.Combine(Path.GetTempPath(), $"openkh-{tempId}");
+                Directory.CreateDirectory(tempZipDir);
+
+                try
+                {
+                    using (var zip = ZipFile.OpenRead(tempZipFile))
+                    {
+                        zip.ExtractToDirectory(tempZipDir);
+                    }
+
+                    var tempBatFile = Path.Combine(Path.GetTempPath(), $"openkh-{tempId}.bat");
+
+                    try
+                    {
+                        var copyTo = AppDomain.CurrentDomain.BaseDirectory;
+
+                        await CreateBatchFileAsync(
+                            tempBatFile: tempBatFile,
+                            copyFrom: tempZipDir,
+                            copyTo: copyTo,
+                            execAfter: $"start \"\" \"{Path.Combine(copyTo, "OpenKh.Tools.ModsManager.exe")}\"" // no enclosing double-quotes!
+                        );
+
+                        var process = Process.Start(
+                            new ProcessStartInfo(
+                                tempBatFile
+                            )
+                            {
+                                UseShellExecute = true,
+                            }
+                        );
+                        process.WaitForExit();
+                    }
+                    finally
+                    {
+                        File.Delete(tempBatFile);
+                    }
+                }
+                finally 
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            Directory.Delete(tempZipDir, true);
+                            break;
+                        }
+                        catch (IOException)
+                        {
+                            // Directory still exists, wait and try again
+                            await Task.Delay(100);
+                        }
                     }
                 }
             }
-
-            var tempZipDir = Path.Combine(Path.GetTempPath(), $"openkh-{tempId}");
-            Directory.CreateDirectory(tempZipDir);
-
-            using (var zip = ZipFile.OpenRead(tempZipFile))
+            finally
             {
-                zip.ExtractToDirectory(tempZipDir);
+                File.Delete(tempZipFile);
             }
-
-            var tempBatFile = Path.Combine(Path.GetTempPath(), $"openkh-{tempId}.bat");
-
-            var copyTo = AppDomain.CurrentDomain.BaseDirectory;
-
-            await CreateBatchFileAsync(
-                tempBatFile: tempBatFile,
-                copyFrom: Path.Combine(tempZipDir, "openkh"),
-                copyTo: copyTo,
-                execAfter: $"start {Path.Combine(copyTo, "OpenKh.Tools.ModsManager.exe")}" // no enclosing double-quotes!
-            );
-
-            Process.Start(
-                new ProcessStartInfo(
-                    tempBatFile
-                )
-                {
-                    UseShellExecute = true,
-                }
-            );
         }
 
         private async Task CopyToAsyncWithProgress(Stream input, Stream output, long? maxLen, Action<float> progress, CancellationToken cancellation)
@@ -84,8 +118,9 @@ namespace OpenKh.Tools.ModsManager.Services
         private async Task CreateBatchFileAsync(string tempBatFile, string copyFrom, string copyTo, string execAfter)
         {
             var bat = new StringWriter();
-            bat.WriteLine($"xcopy /d /e \"{copyFrom}\" \"{copyTo}\" || pause");
+            bat.WriteLine($"xcopy /d /e /y \"{copyFrom}\" \"{copyTo}\" || pause");
             bat.WriteLine($"{execAfter}");
+            bat.WriteLine($"exit");
             await File.WriteAllTextAsync(tempBatFile, bat.ToString(), Encoding.Default);
         }
     }

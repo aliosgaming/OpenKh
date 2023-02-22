@@ -1130,7 +1130,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             {
                 var message = "A new version of OpenKh has been detected!\n" +
                     $"[Current: {checkResult.CurrentVersion}, Latest: {checkResult.NewVersion}]\n\n" +
-                    "Do you wish to update the game?";
+                    "Do you wish to update the mod manager?";
 
                 if (MessageBox.Show(message, "OpenKh", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {

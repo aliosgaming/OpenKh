@@ -21,7 +21,7 @@ namespace OpenKh.Tools.ModsManager.Services
         {
             var gitClient = new GitHubClient(new ProductHeaderValue("OpenKh.Tools.ModsManager"));
             var releases = await gitClient.Repository.Release.GetAll(
-                owner: "OpenKh",
+                owner: "aliosgaming",
                 name: "OpenKh",
                 options: new ApiOptions
                 {
@@ -32,10 +32,10 @@ namespace OpenKh.Tools.ModsManager.Services
             );
             var latestAssets = releases
                 .OrderByDescending(release => release.CreatedAt)
-                .Where(release => _validTag.IsMatch(release.TagName))
+                //.Where(release => _validTag.IsMatch(release.TagName))
                 .SelectMany(
                     release => release.Assets
-                        .Where(asset => asset.Name == "openkh.zip" && asset.State == "uploaded")
+                        .Where(asset => asset.Name == "OpenKH.Mod.Manager.2023.zip" && asset.State == "uploaded")
                         .Select(asset => (Release: release, Asset: asset))
                 )
                 .Take(1)
