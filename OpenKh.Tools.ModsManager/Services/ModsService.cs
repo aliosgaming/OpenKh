@@ -3,6 +3,7 @@ using OpenKh.Common;
 using OpenKh.Patcher;
 using OpenKh.Tools.ModsManager.Exceptions;
 using OpenKh.Tools.ModsManager.Models;
+using OpenKh.Tools.ModsManager.ViewModels;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using static OpenKh.Tools.ModsManager.Helpers;
 
 namespace OpenKh.Tools.ModsManager.Services
@@ -129,7 +131,22 @@ namespace OpenKh.Tools.ModsManager.Services
 
             var modPath = GetModPath(modName);
             if (Directory.Exists(modPath))
-                throw new ModAlreadyExistsExceptions(modName);
+            {
+                var errorMessage = MessageBox.Show($"A mod with the name '{modName}' already exists. Do you want to overwrite the mod install.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                switch (errorMessage)
+                {
+                    case MessageBoxResult.Yes:
+                        MainViewModel.overwriteMod = true;
+                        Directory.Delete(modPath, true);
+                        break;
+                    case MessageBoxResult.No:
+                        throw new ModAlreadyExistsExceptions(modName);
+                        break;
+                }
+
+            }
+               
             Directory.CreateDirectory(modPath);
 
             var entryExtractCount = 0;
@@ -256,7 +273,31 @@ namespace OpenKh.Tools.ModsManager.Services
 
             var modPath = GetModPath(repositoryName);
             if (Directory.Exists(modPath))
-                throw new ModAlreadyExistsExceptions(repositoryName);
+            {
+                var errorMessage = MessageBox.Show($"A mod with the name '{repositoryName}' already exists. Do you want to overwrite the mod install.", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                switch (errorMessage)
+                {
+                    case MessageBoxResult.Yes:
+                        Handle(() =>
+                        {
+                            MainViewModel.overwriteMod = true;
+                            foreach (var filePath in Directory.GetFiles(modPath, "*", SearchOption.AllDirectories))
+                            {
+                                var attributes = File.GetAttributes(filePath);
+                                if (attributes.HasFlag(FileAttributes.ReadOnly))
+                                    File.SetAttributes(filePath, attributes & ~FileAttributes.ReadOnly);
+                            }
+
+                            Directory.Delete(modPath, true);
+                        });
+                        break;
+                    case MessageBoxResult.No:
+                        throw new ModAlreadyExistsExceptions(repositoryName);
+                        break;
+                }
+            }
+                
             Directory.CreateDirectory(modPath);
 
             progressOutput?.Invoke($"Mod found, initializing cloning process");
