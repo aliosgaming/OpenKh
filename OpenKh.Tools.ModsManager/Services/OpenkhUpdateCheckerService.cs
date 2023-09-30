@@ -21,7 +21,7 @@ namespace OpenKh.Tools.ModsManager.Services
         {
             var gitClient = new GitHubClient(new ProductHeaderValue("OpenKh.Tools.ModsManager"));
             var releases = await gitClient.Repository.Release.GetAll(
-                owner: "OpenKh",
+                owner: "aliosgaming",
                 name: "OpenKh",
                 options: new ApiOptions
                 {
@@ -32,10 +32,10 @@ namespace OpenKh.Tools.ModsManager.Services
             );
             var latestAssets = releases
                 .OrderByDescending(release => release.CreatedAt)
-                .Where(release => _validTag.IsMatch(release.TagName))
+                //.Where(release => _validTag.IsMatch(release.TagName))
                 .SelectMany(
                     release => release.Assets
-                        .Where(asset => asset.Name == "openkh.zip" && asset.State == "uploaded")
+                        .Where(asset => asset.Name == "OpenKH.Mod.Manager.2023.zip" && asset.State == "uploaded")
                         .Select(asset => (Release: release, Asset: asset))
                 )
                 .Take(1)
@@ -49,15 +49,18 @@ namespace OpenKh.Tools.ModsManager.Services
 
                 var localReleaseTagFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "openkh-release");
                 var localReleaseTag = File.Exists(localReleaseTagFile)
-                    ? File.ReadAllLines(localReleaseTagFile).First()
+                    ? File.ReadAllText(localReleaseTagFile)
                     : "(Unknown version)";
 
-                return new CheckResult(
-                    HasUpdate: localReleaseTag != remoteReleaseTag,
-                    CurrentVersion: localReleaseTag,
-                    NewVersion: remoteReleaseTag,
-                    DownloadZipUrl: latestAsset.Asset.BrowserDownloadUrl
-                );
+                if (localReleaseTag != remoteReleaseTag)
+                {
+                    return new CheckResult(
+                        HasUpdate: true,
+                        CurrentVersion: localReleaseTag,
+                        NewVersion: remoteReleaseTag,
+                        DownloadZipUrl: latestAsset.Asset.BrowserDownloadUrl
+                    );
+                }
             }
 
             return new CheckResult(
