@@ -15,7 +15,6 @@ using System.Windows;
 using Xe.Tools;
 using Xe.Tools.Wpf.Commands;
 using static OpenKh.Tools.ModsManager.Helpers;
-using System.Text;
 
 namespace OpenKh.Tools.ModsManager.ViewModels
 {
@@ -41,7 +40,6 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         private bool _devView;
         private bool _autoUpdateMods = false;
         private string _launchGame = "kh2";
-        private static string StoragePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
         private List<string> _supportedGames = new List<string>()
         {
             "kh2",
@@ -67,6 +65,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         public string Title => ApplicationName;
         public string CurrentVersion => ApplicationVersion;
         public ObservableCollection<ModViewModel> ModsList { get; set; }
+        public ObservableCollection<string> PresetList { get; set; }
         public RelayCommand ExitCommand { get; set; }
         public RelayCommand AddModCommand { get; set; }
         public RelayCommand RemoveModCommand { get; set; }
@@ -82,6 +81,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         public RelayCommand WizardCommand { get; set; }
         public RelayCommand OpenLinkCommand { get; set; }
         public RelayCommand CheckOpenkhUpdateCommand { get; set; }
+        public RelayCommand OpenPresetMenuCommand { get; set; }
 
         public ModViewModel SelectedValue
         {
@@ -245,6 +245,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
 
             ReloadModsList();
             SelectedValue = ModsList.FirstOrDefault();
+            ReloadPresetList();
 
             ExitCommand = new RelayCommand(_ => Window.Close());
             AddModCommand = new RelayCommand(_ =>
@@ -260,6 +261,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     {
                         var name = view.RepositoryName;
                         var isZipFile = view.IsZipFile;
+                        var isLuaFile = view.IsLuaFile;
                         progressWindow = Application.Current.Dispatcher.Invoke(() =>
                         {
                             var progressWindow = new InstallModProgressWindow
@@ -271,16 +273,14 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                             progressWindow.Show();
                             return progressWindow;
                         });
-
-                        await ModsService.InstallMod(name, isZipFile, progress =>
+                        await ModsService.InstallMod(name, isZipFile, isLuaFile, progress =>
                         {
                             Application.Current.Dispatcher.Invoke(() => progressWindow.ProgressText = progress);
                         }, nProgress =>
                         {
                             Application.Current.Dispatcher.Invoke(() => progressWindow.ProgressValue = nProgress);
                         });
-
-                        var actualName = isZipFile ? Path.GetFileNameWithoutExtension(name) : name;
+                        var actualName = isZipFile || isLuaFile ? Path.GetFileNameWithoutExtension(name) : name;
                         var mod = ModsService.GetMods(new string[] { actualName }).First();
                         Application.Current.Dispatcher.Invoke(() =>
                         {
@@ -422,6 +422,12 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 }
             });
 
+            OpenPresetMenuCommand = new RelayCommand(_ =>
+            {
+                PresetsWindow view = new PresetsWindow(this);
+                view.Show();
+            });
+
             OpenLinkCommand = new RelayCommand(url => Process.Start(new ProcessStartInfo(url as string)
             {
                 UseShellExecute = true
@@ -435,265 +441,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             FetchUpdates();
 
             if (ConfigurationService.WizardVersionNumber < _wizardVersionNumber)
-            {
-                ///---Everything after this to be removed at later date
-                if (ConfigurationService.PcReleaseLocation != null | ConfigurationService.Pcsx2Location != null)
-                {
-                    var path = ConfigurationService.GameDataLocation;
-                    var newpath = Path.Combine(path, "kh2");
-
-                    if (Directory.Exists(path) == false)
-                    {
-                        MessageBox.Show("Cannot find valid KH2 Extraction" +
-                        "\nPlease complete the setup wizard to update panacea and re-extract your game files.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Thanks for updating the mod manager! Be sure to complete the setup wizard again in order to update your panacea installation.", "Thanks for Updating!", MessageBoxButton.OK);
-                    }
-
-                    //If user has "kh2" folder made already in their openkh folder, rename temporarily to complete further steps
-                    if (Directory.Exists("kh2") == true)
-                    {
-                        Directory.Move("kh2", "kh2-namechange-temp");
-                    }
-
-                    //From Shan - Move extracted files to sub kh2 folder in location they were installed in
-                    if (!Directory.Exists(newpath))
-                    {
-                        if (Directory.Exists(path) && !Directory.Exists(newpath))
-                        {
-                            Directory.CreateDirectory(Path.Combine(newpath));
-                            Directory.Move(Path.Combine(path, "anm"), Path.Combine(newpath, "anm"));
-                            Directory.Move(Path.Combine(path, "ard"), Path.Combine(newpath, "ard"));
-                            Directory.Move(Path.Combine(path, "bgm"), Path.Combine(newpath, "bgm"));
-                            Directory.Move(Path.Combine(path, "dbg"), Path.Combine(newpath, "dbg"));
-                            Directory.Move(Path.Combine(path, "effect"), Path.Combine(newpath, "effect"));
-                            Directory.Move(Path.Combine(path, "event"), Path.Combine(newpath, "event"));
-                            Directory.Move(Path.Combine(path, "field2d"), Path.Combine(newpath, "field2d"));
-                            Directory.Move(Path.Combine(path, "file"), Path.Combine(newpath, "file"));
-                            Directory.Move(Path.Combine(path, "gumibattle"), Path.Combine(newpath, "gumibattle"));
-                            Directory.Move(Path.Combine(path, "gumiblock"), Path.Combine(newpath, "gumiblock"));
-                            Directory.Move(Path.Combine(path, "gumimenu"), Path.Combine(newpath, "gumimenu"));
-                            try
-                            {
-                                Directory.Move(Path.Combine(path, "ICON"), Path.Combine(newpath, "ICON"));
-                                Directory.Move(Path.Combine(path, "remastered"), Path.Combine(newpath, "remastered"));
-                                Directory.Move(Path.Combine(path, "save_image"), Path.Combine(newpath, "save_image"));
-                            }
-                            catch { };
-                            Directory.Move(Path.Combine(path, "itempic"), Path.Combine(newpath, "itempic"));
-                            Directory.Move(Path.Combine(path, "libretto"), Path.Combine(newpath, "libretto"));
-                            Directory.Move(Path.Combine(path, "limit"), Path.Combine(newpath, "limit"));
-                            Directory.Move(Path.Combine(path, "magic"), Path.Combine(newpath, "magic"));
-                            Directory.Move(Path.Combine(path, "map"), Path.Combine(newpath, "map"));
-                            Directory.Move(Path.Combine(path, "menu"), Path.Combine(newpath, "menu"));
-                            Directory.Move(Path.Combine(path, "minigame"), Path.Combine(newpath, "minigame"));
-                            Directory.Move(Path.Combine(path, "msg"), Path.Combine(newpath, "msg"));
-                            Directory.Move(Path.Combine(path, "msn"), Path.Combine(newpath, "msn"));
-                            Directory.Move(Path.Combine(path, "npack"), Path.Combine(newpath, "npack"));
-                            Directory.Move(Path.Combine(path, "obj"), Path.Combine(newpath, "obj"));
-                            Directory.Move(Path.Combine(path, "se"), Path.Combine(newpath, "se"));
-                            Directory.Move(Path.Combine(path, "vagstream"), Path.Combine(newpath, "vagstream"));
-                            Directory.Move(Path.Combine(path, "voice"), Path.Combine(newpath, "voice"));
-                            List<string> files = new List<string>
-                        {
-                            Path.Combine(path,"00areainfo.bin"),
-                            Path.Combine(path,"00battle.bin"),
-                            Path.Combine(path,"00common.bdx"),
-                            Path.Combine(path,"00effect.bar"),
-                            Path.Combine(path,"00font.bar"),
-                            Path.Combine(path,"00fontimg.bar"),
-                            Path.Combine(path,"00localset.bin"),
-                            Path.Combine(path,"00objentry.bin"),
-                            Path.Combine(path,"00place.bin"),
-                            Path.Combine(path,"00progress.bin"),
-                            Path.Combine(path,"00sysrc.bar"),
-                            Path.Combine(path,"00system.bin"),
-                            Path.Combine(path,"00worldpoint.bin"),
-                            Path.Combine(path,"03system.bin"),
-                            Path.Combine(path,"07localset.bin"),
-                            Path.Combine(path,"10font.bar"),
-                            Path.Combine(path,"11fontimg.bar"),
-                            Path.Combine(path,"12soundinfo.bar"),
-                            Path.Combine(path,"13libretto.bin"),
-                            Path.Combine(path,"14mission.bar"),
-                            Path.Combine(path,"14mission.bin"),
-                            Path.Combine(path,"15jigsaw.bin"),
-                            Path.Combine(path,"50gb_effect.bar"),
-                            Path.Combine(path,"50gumientry.bin"),
-                            Path.Combine(path,"50wmentry.bin"),
-                            Path.Combine(path,"50worldmap.bin"),
-                            Path.Combine(path,"60gb_effect.bar"),
-                            Path.Combine(path,"70landing.bar"),
-                            Path.Combine(path,"99motion.dbg"),
-                            Path.Combine(path,"backup_icon0.png"),
-                            Path.Combine(path,"dk_mask.tm2"),
-                            Path.Combine(path,"eventviewer.bar"),
-                            Path.Combine(path,"GHelpText.bin"),
-                            Path.Combine(path,"icon0.png"),
-                            Path.Combine(path,"icon0_e.png"),
-                            Path.Combine(path,"icon0_jp.png"),
-                            Path.Combine(path,"icon0_n.png"),
-                            Path.Combine(path,"item-011.imd"),
-                            Path.Combine(path,"KH2.IDX"),
-                            Path.Combine(path,"KHHD2.5.config"),
-                            Path.Combine(path,"KHHD2.8.config"),
-                            Path.Combine(path,"libretto-al.bar"),
-                            Path.Combine(path,"libretto-bb.bar"),
-                            Path.Combine(path,"libretto-ca.bar"),
-                            Path.Combine(path,"libretto-dc.bar"),
-                            Path.Combine(path,"libretto-di.bar"),
-                            Path.Combine(path,"libretto-eh.bar"),
-                            Path.Combine(path,"libretto-es.bar"),
-                            Path.Combine(path,"libretto-hb.bar"),
-                            Path.Combine(path,"libretto-he.bar"),
-                            Path.Combine(path,"libretto-lk.bar"),
-                            Path.Combine(path,"libretto-lm.bar"),
-                            Path.Combine(path,"libretto-mu.bar"),
-                            Path.Combine(path,"libretto-nm.bar"),
-                            Path.Combine(path,"libretto-po.bar"),
-                            Path.Combine(path,"libretto-tr.bar"),
-                            Path.Combine(path,"libretto-tt.bar"),
-                            Path.Combine(path,"libretto-wi.bar"),
-                            Path.Combine(path,"libretto-wm.bar"),
-                            Path.Combine(path,"MHelpText.bin"),
-                            Path.Combine(path,"radar.tm2"),
-                            Path.Combine(path,"THelpText.bin"),
-                            Path.Combine(path,"000al.idx"),
-                            Path.Combine(path,"000bb.idx"),
-                            Path.Combine(path,"000ca.idx"),
-                            Path.Combine(path,"000dc.idx"),
-                            Path.Combine(path,"000di.idx"),
-                            Path.Combine(path,"000eh.idx"),
-                            Path.Combine(path,"000es.idx"),
-                            Path.Combine(path,"000gumi.idx"),
-                            Path.Combine(path,"000hb.idx"),
-                            Path.Combine(path,"000he.idx"),
-                            Path.Combine(path,"000lk.idx"),
-                            Path.Combine(path,"000lm.idx"),
-                            Path.Combine(path,"000mu.idx"),
-                            Path.Combine(path,"000nm.idx"),
-                            Path.Combine(path,"000po.idx"),
-                            Path.Combine(path,"000tr.idx"),
-                            Path.Combine(path,"000tt.idx"),
-                            Path.Combine(path,"000wi.idx"),
-                            Path.Combine(path,"000wm.idx"),
-
-                        };
-                            foreach (string s in files)
-                            {
-                                if (File.Exists(s))
-                                    File.Move(s, Path.Combine(newpath, Path.GetFileName(s)));
-                            }
-
-                        }
-
-                    }
-
-                    //Enumerate files and directories inside mod folder, delete them to empty folder
-                    if (Directory.Exists("mod") == true)
-                    {
-                        DirectoryInfo modDir = new DirectoryInfo("mod");
-                        foreach (FileInfo file in modDir.EnumerateFiles())
-                        {
-                            file.Delete();
-                        }
-                        foreach (DirectoryInfo dir in modDir.EnumerateDirectories())
-                        {
-                            dir.Delete(true);
-                        }
-                    }
-                    //Clean out new mods folder except for users current mods, enumerate files in mods folder, move all files and folders into kh2 sub folder (Fix users 'mods' directory)
-                    if (Directory.Exists("mods\\bbs") == true)
-                    {
-                        if (Directory.EnumerateDirectories("mods\\bbs").Any() == false)
-                        {
-                            Directory.Delete("mods\\bbs");
-                        }
-
-                    }
-                    if (Directory.Exists("mods\\kh1") == true)
-                    {
-                        if (Directory.EnumerateDirectories("mods\\kh1").Any() == false)
-                        {
-                            Directory.Delete("mods\\kh1");
-                        }
-                    }
-                    if (Directory.Exists("mods\\Recom") == true)
-                    {
-                        if (Directory.EnumerateDirectories("mods\\Recom").Any() == false)
-                        {
-                            Directory.Delete("mods\\Recom");
-                        }
-                    }
-                    if (Directory.Exists("mods\\kh2") == true)
-                    {
-                        if (Directory.EnumerateDirectories("mods\\kh2").Any() == false)
-                        {
-                            Directory.Delete("mods\\kh2");
-                        }
-                    }
-                    if (Directory.Exists("kh2") == false)
-                    {
-                        if (Directory.Exists("mods") == true && Directory.Exists("mods\\kh2") == false)
-                        {
-                            // Make a reference to a directory.
-                            DirectoryInfo di = new DirectoryInfo("mods");
-
-                            // Get a reference to each directory in that directory.
-                            DirectoryInfo[] diArr = di.GetDirectories();
-
-                            Directory.CreateDirectory("mods\\kh2");
-
-                            //Move each directory into kh2 sub folder.
-                            foreach (DirectoryInfo dri in diArr)
-                                Directory.Move("mods\\" + dri.Name, "mods\\kh2\\" + dri.Name);
-                        }
-                    }
-
-                    if (Directory.Exists("mods\\bbs") == false)
-                    {
-                        Directory.CreateDirectory("mods\\bbs");
-                    }
-                    if (Directory.Exists("mods\\kh1") == false)
-                    {
-                        Directory.CreateDirectory("mods\\kh1");
-                    }
-                    if (Directory.Exists("mods\\Recom") == false)
-                    {
-                        Directory.CreateDirectory("mods\\Recom");
-                    }
-                    //Rename mods.txt to mods-KH2.txt
-                    if (File.Exists("mods.txt") == true)
-                    {
-                        if (Directory.Exists("mods-KH2.txt") == false)
-                        {
-                            File.Move("mods.txt", "mods-KH2.txt");
-                        }
-                    }
-                    // Delete(Replaces) Luabackend.toml from game install folder, place new Luabackend.toml file with updated scripts locations (Fix users luabackend.toml scripts location)
-                    if (ConfigurationService.PcReleaseLocation != null & File.Exists(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml") == true)
-                    {
-                        string StoragePath_Fixed = StoragePath;
-                        StoragePath_Fixed = StoragePath_Fixed.Replace("\\", "\\\\");
-                        string[] lines = { "[kh1]", "scripts = [{ path = \"scripts/kh1/\", relative = true }]", "base = 0x3A0606", "thread_struct = 0x22B7280", "exe = \"KINGDOM HEARTS FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh2]", "scripts = [{ path = \"scripts/kh2/\", relative = true }, {path = \"" + StoragePath_Fixed + "\\\\mod\\\\kh2\\\\scripts\",relative = false}]", "base = 0x56454E", "thread_struct = 0x89E9A0", "exe = \"KINGDOM HEARTS II FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[bbs]", "scripts = [{ path = \"scripts/bbs/\", relative = true }]", "base = 0x60E334", "thread_struct = 0x110B5970", "exe = \"KINGDOM HEARTS Birth by Sleep FINAL MIX.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[recom]", "scripts = [{ path = \"scripts/recom/\", relative = true }]", "base = 0x4E4660", "thread_struct = 0xBF7A80", "exe = \"KINGDOM HEARTS Re_Chain of Memories.exe\"", "game_docs = \"KINGDOM HEARTS HD 1.5+2.5 ReMIX\"", "\n[kh3d]", "scripts = [{ path = \"scripts/kh3d/\", relative = true }]", "base = 0x770E4A", "thread_struct = 0x14DA6F20", "exe = \"KINGDOM HEARTS Dream Drop Distance.exe\"", "game_docs = \"KINGDOM HEARTS HD 2.8 Final Chapter Prologue\"" };
-                        using StreamWriter file = new(ConfigurationService.PcReleaseLocation + "\\Luabackend.toml");
-                        foreach (string line in lines)
-                        {
-                            file.WriteLineAsync(line);
-                        }
-                    }
-                    if (Directory.Exists("kh2-namechange-temp") == true)
-                    {
-                        Directory.Move("kh2-namechange-temp", "kh2");
-                    }
-                    try
-                    {
-                        ReloadModsList();
-                    }
-                    catch (Exception e) { MessageBox.Show("Mod Manager failed to reload mods list! Contact support in the KH2 Randomizer Discord for help", "Error", MessageBoxButton.OK); }
-                }
+            {                
                 WizardCommand.Execute(null);
             }
         }
@@ -1180,6 +928,53 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 var message = $"The latest version '{checkResult.CurrentVersion}' is already installed!";
 
                 MessageBox.Show(message, "OpenKh");
+            }
+        }
+        
+        
+        // PRESETS
+        public void SavePreset(string presetName)
+        {
+            string name = string.Join("+", presetName.Split(Path.GetInvalidFileNameChars()));
+            List<string> enabledMods = ModsList
+            .Where(x => x.Enabled)
+            .Select(x => x.Source)
+            .ToList();
+            File.WriteAllLines(Path.Combine(ConfigurationService.PresetPath, name + ".txt"), enabledMods);
+            if (!PresetList.Contains(presetName))
+            {
+                PresetList.Add(presetName);
+            }
+        }
+        public void RemovePreset(string presetName)
+        {
+            File.Delete(Path.Combine(ConfigurationService.PresetPath, presetName + ".txt"));
+            PresetList.Remove(presetName);
+        }
+
+        public void LoadPreset(string presetName)
+        {
+            string filename = Path.Combine(ConfigurationService.PresetPath, presetName + ".txt");
+            if (File.Exists(filename))
+            {
+                ConfigurationService.EnabledMods = File.ReadAllLines(filename);
+                ReloadModsList();
+            }
+            else
+            {
+                MessageBox.Show("Cannot find preset", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+        }
+
+        public void ReloadPresetList()
+        {
+            if (PresetList == null)
+                PresetList = new ObservableCollection<string>();
+
+            PresetList.Clear();
+            foreach (string presetFilePath in Directory.GetFiles(ConfigurationService.PresetPath))
+            {
+                PresetList.Add(Path.GetFileNameWithoutExtension(presetFilePath));
             }
         }
     }
