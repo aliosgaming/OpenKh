@@ -20,32 +20,10 @@ namespace OpenKh.Tools.ModsManager.Services
         public async Task<CheckResult> CheckAsync(CancellationToken cancellation)
         {
             var gitClient = new GitHubClient(new ProductHeaderValue("OpenKh.Tools.ModsManager"));
-            var releases = await gitClient.Repository.Release.GetAll(
-                owner: "aliosgaming",
-                name: "OpenKh",
-                options: new ApiOptions
-                {
-                    PageCount = 1,
-                    PageSize = 10,
-                    StartPage = 1
-                }
-            );
-            var latestAssets = releases
-                .OrderByDescending(release => release.CreatedAt)
-                //.Where(release => _validTag.IsMatch(release.TagName))
-                .SelectMany(
-                    release => release.Assets
-                        .Where(asset => asset.Name == "OpenKH.Mod.Manager.zip" && asset.State == "uploaded")
-                        .Select(asset => (Release: release, Asset: asset))
-                )
-                .Take(1)
-                .ToArray();
-
-            if (latestAssets.Any())
+            var releases = gitClient.Repository.Release.GetLatest(owner: "aliosgaming", name: "OpenKh").Result;
+            if (releases != null)
             {
-                var latestAsset = latestAssets.First();
-
-                var remoteReleaseTag = latestAsset.Release.TagName;
+                var remoteReleaseTag = releases.TagName;
 
                 var localReleaseTagFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "openkh-release");
                 var localReleaseTag = File.Exists(localReleaseTagFile)
@@ -58,11 +36,10 @@ namespace OpenKh.Tools.ModsManager.Services
                         HasUpdate: true,
                         CurrentVersion: localReleaseTag,
                         NewVersion: remoteReleaseTag,
-                        DownloadZipUrl: latestAsset.Asset.BrowserDownloadUrl
+                        DownloadZipUrl: releases.Url
                     );
                 }
             }
-
             return new CheckResult(
                 HasUpdate: false,
                 CurrentVersion: "v3.1.0",
