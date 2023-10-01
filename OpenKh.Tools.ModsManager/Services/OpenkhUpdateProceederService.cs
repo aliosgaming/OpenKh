@@ -85,6 +85,7 @@ namespace OpenKh.Tools.ModsManager.Services
         private async Task CreateBatchFileAsync(string tempBatFile, string copyFrom, string copyTo, string execAfter)
         {
             var bat = new StringWriter();
+            bat.WriteLine($"taskkill /im OpenKh.Tools.ModsManager.exe");
             bat.WriteLine($"xcopy /e /y \"{copyFrom}\" \"{copyTo}\" || pause");
             bat.WriteLine($"{execAfter}");
             bat.WriteLine($"rd /s /q \"{copyFrom}\"");
