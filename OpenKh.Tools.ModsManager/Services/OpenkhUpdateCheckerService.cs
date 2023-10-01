@@ -36,7 +36,7 @@ namespace OpenKh.Tools.ModsManager.Services
                         HasUpdate: true,
                         CurrentVersion: localReleaseTag,
                         NewVersion: remoteReleaseTag,
-                        DownloadZipUrl: releases.Url
+                        DownloadZipUrl: releases.Assets[0].BrowserDownloadUrl
                     );
                 }
             }
