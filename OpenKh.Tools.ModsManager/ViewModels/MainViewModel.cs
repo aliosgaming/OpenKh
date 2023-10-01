@@ -441,9 +441,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             FetchUpdates();
 
             if (ConfigurationService.WizardVersionNumber < _wizardVersionNumber)
-            {                
                 WizardCommand.Execute(null);
-            }
         }
 
         public void CloseAllWindows()
