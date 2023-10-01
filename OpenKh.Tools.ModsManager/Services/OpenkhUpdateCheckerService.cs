@@ -35,7 +35,7 @@ namespace OpenKh.Tools.ModsManager.Services
                 //.Where(release => _validTag.IsMatch(release.TagName))
                 .SelectMany(
                     release => release.Assets
-                        .Where(asset => asset.Name == "OpenKH.Mod.Manager.2023.zip" && asset.State == "uploaded")
+                        .Where(asset => asset.Name == "OpenKH.Mod.Manager.zip" && asset.State == "uploaded")
                         .Select(asset => (Release: release, Asset: asset))
                 )
                 .Take(1)
