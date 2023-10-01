@@ -65,7 +65,7 @@ namespace OpenKh.Tools.ModsManager.Services
 
             return new CheckResult(
                 HasUpdate: false,
-                CurrentVersion: "",
+                CurrentVersion: "v3.1.0",
                 NewVersion: "",
                 DownloadZipUrl: ""
             );
