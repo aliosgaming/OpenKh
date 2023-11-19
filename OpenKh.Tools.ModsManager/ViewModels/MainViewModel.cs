@@ -86,6 +86,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         public RelayCommand OpenLinkCommand { get; set; }
         public RelayCommand CheckOpenkhUpdateCommand { get; set; }
         public RelayCommand OpenPresetMenuCommand { get; set; }
+        public RelayCommand CheckForModUpdatesCommand { get; set; }
 
         public ModViewModel SelectedValue
         {
@@ -113,6 +114,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         public Visibility ModLoader => !PC || PanaceaInstalled ? Visibility.Visible : Visibility.Collapsed;
         public Visibility notPC => !PC ? Visibility.Visible : Visibility.Collapsed;
         public Visibility isPC => PC ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PanaceaSettings => PC && PanaceaInstalled ? Visibility.Visible : Visibility.Collapsed;
 
         public bool PanaceaConsoleEnabled
         {
@@ -185,6 +187,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 _panaceaInstalled = value;
                 OnPropertyChanged(nameof(PatchVisible));
                 OnPropertyChanged(nameof(ModLoader));
+                OnPropertyChanged(nameof(PanaceaSettings));
             }
         }
 
@@ -199,6 +202,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 OnPropertyChanged(nameof(PatchVisible));
                 OnPropertyChanged(nameof(notPC));
                 OnPropertyChanged(nameof(isPC));
+                OnPropertyChanged(nameof(PanaceaSettings));
             }
         }
 
@@ -482,6 +486,11 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             {
                 PresetsWindow view = new PresetsWindow(this);
                 view.ShowDialog();
+            });
+
+            CheckForModUpdatesCommand = new RelayCommand(_ =>
+            {
+                FetchUpdates();
             });
 
             OpenLinkCommand = new RelayCommand(url => Process.Start(new ProcessStartInfo(url as string)
@@ -987,9 +996,9 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         
         public void UpdatePanaceaSettings()
         {
-            string panaceaSettings = Path.Combine(ConfigurationService.PcReleaseLocation, "panacea_settings.txt");
-            if (panaceaSettings != null)
+            if (PanaceaInstalled)
             {
+                string panaceaSettings = Path.Combine(ConfigurationService.PcReleaseLocation, "panacea_settings.txt");
                 string textToWrite = $"mod_path={ConfigurationService.GameModPath}\r\nshow_console={_panaceaConsoleEnabled}\r\n" +
                     $"debug_log={_panaceaDebugLogEnabled}\r\nenable_cache={_panaceaCacheEnabled}\r\nquick_menu={_panaceaQuickMenuEnabled}";
                 File.WriteAllText(panaceaSettings, textToWrite);
@@ -1005,9 +1014,9 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             .Select(x => x.Source)
             .ToList();
             File.WriteAllLines(Path.Combine(ConfigurationService.PresetPath, name + ".txt"), enabledMods);
-            if (!PresetList.Contains(presetName))
+            if (!PresetList.Contains(name))
             {
-                PresetList.Add(presetName);
+                PresetList.Add(name);
             }
         }
         public void RemovePreset(string presetName)
