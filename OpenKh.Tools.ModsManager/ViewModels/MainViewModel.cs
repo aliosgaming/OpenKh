@@ -52,7 +52,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             "bbs",
             "Recom"
         };
-        private int _wizardVersionNumber = 2;
+        private int _wizardVersionNumber = 3;
         private string[] executable = new string[]
         {
             "KINGDOM HEARTS II FINAL MIX.exe",
