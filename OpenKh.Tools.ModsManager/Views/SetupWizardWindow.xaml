@@ -205,19 +205,10 @@
                 <TextBlock>Region</TextBlock>
                 <ComboBox Margin="0 0 0 6" SelectedIndex="{Binding RegionId}">
                     <ComboBoxItem>Use game default region</ComboBoxItem>
-                    <ComboBoxItem>Japanese (text JP, menu JP, voice JP)</ComboBoxItem>
-                    <ComboBoxItem>English (text US, menu US, voice US)</ComboBoxItem>
-                    <ComboBoxItem>English (text US, menu UK, voice US)</ComboBoxItem>
-                    <ComboBoxItem>Italian (text IT, menu IT, voice IT)</ComboBoxItem>
-                    <ComboBoxItem>Spanish (text SP, menu SP, voice SP)</ComboBoxItem>
-                    <ComboBoxItem>German (text GR, menu GR, voice GR)</ComboBoxItem>
-                    <ComboBoxItem>French (text FR, menu FR, voice FR)</ComboBoxItem>
-                    <ComboBoxItem>Final Mix (text JP, menu FM, voice US)</ComboBoxItem>
                 </ComboBox>
 
                 <TextBlock Margin="0 0 0 3" TextWrapping="Wrap">
-                    Forces to load the internal configuration to a specific region. This allows to effectively load files from other languages, swap the O and X buttons and use the font table in a different way.
-                    Do not worry if some region files are not found as the Mods Manager has a fallback mechanic.
+                    Forces to load the internal configuration to a specific region. The default region is the only option now. Click "Next" to continue.
                 </TextBlock>
             </StackPanel>
         </xctk:WizardPage>
@@ -233,7 +224,7 @@
                 <TextBlock Margin="0 0 0 3" TextWrapping="Wrap">
                         Panacea allows the PC version of Kingdom Hearts to load the mods you have installed, without
                         modifying the game files.
-                        The file is named 'DBGHELP.dll' for Windows and 'version.dll' for Linux and it can be found in your game's install folder.
+                        The file is named 'DBGHELP.dll' for Windows and can be found in your game's install folder.
                         Panacea will run every time you start the game and attempt to load built mods. To uninstall Panacea, click Remove Panacea button.
                 </TextBlock>
                 <StackPanel Visibility="{Binding PanaceaNotInstalledVisibility}">
@@ -249,16 +240,6 @@
                         HorizontalAlignment="Left"
                         Width="205"
                         Command="{Binding InstallPanaceaCommand}" CommandParameter="false"/>
-                    <TextBlock Margin="0 0 0 3" TextWrapping="Wrap">
-                        <Run Foreground="Red">WARNING</Run>
-                        linux support is still a WIP. While it does currently work it is a lot of extra setup.
-                    </TextBlock>
-                    <Button
-                        Margin="0 0 0 6"
-                        Content="Install Panacea for Linux"
-                        HorizontalAlignment="Left"
-                        Width="205"
-                        Command="{Binding InstallPanaceaCommand}" CommandParameter="true"/>
                 </StackPanel>
                 <StackPanel Visibility="{Binding PanaceaInstalledVisibility}">
                     <TextBlock Margin="0 0 0 3" TextWrapping="Wrap">
