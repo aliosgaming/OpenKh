@@ -34,6 +34,7 @@ namespace OpenKh.Tools.ModsManager.Services
             public string OpenKhGameEngineLocation { get; internal set; }
             public string Pcsx2Location { get; internal set; }
             public string PcReleaseLocation { get; internal set; }
+            public string PcReleaseLocationKH3D { get; internal set; }
             public string PcReleaseLanguage { get; internal set; } = "en";
             public int RegionId { get; internal set; }
             public bool PanaceaInstalled { get; internal set; }
@@ -47,6 +48,7 @@ namespace OpenKh.Tools.ModsManager.Services
             public List<string> GamesToExtract { get; internal set; } = new List<string> { "kh2" };
             public string LaunchGame { get; internal set; } = "kh2";
             public bool DarkMode { get; internal set; } = true;
+            public List<YamlGenPref> YamlGenPrefs { get; internal set; } = new List<YamlGenPref>();
 
             public void Save(string fileName)
             {
@@ -70,8 +72,18 @@ namespace OpenKh.Tools.ModsManager.Services
         private static string EnabledModsPathKH2 = Path.Combine(StoragePath, "mods-KH2.txt");
         private static string EnabledModsPathBBS = Path.Combine(StoragePath, "mods-BBS.txt");
         private static string EnabledModsPathRECOM = Path.Combine(StoragePath, "mods-ReCoM.txt");
+        private static string EnabledModsPathKH3D = Path.Combine(StoragePath, "mods-KH3D.txt");
         private static readonly Config _config = Config.Open(ConfigPath);
         public static string PresetPath = Path.Combine(StoragePath, "presets");
+
+        public class YamlGenPref
+        {
+            public string Label { get; set; }
+            public string GameDataPath { get; set; }
+            public string ModYmlFilePath { get; set; }
+
+            public override string ToString() => Label;
+        }
 
         static ConfigurationService()
         {
@@ -84,6 +96,8 @@ namespace OpenKh.Tools.ModsManager.Services
                 Directory.CreateDirectory(Path.Combine(modsPath, "bbs"));
             if (!Directory.Exists(Path.Combine(modsPath, "Recom")))
                 Directory.CreateDirectory(Path.Combine(modsPath, "Recom"));
+            if (!Directory.Exists(Path.Combine(modsPath, "kh3d")))
+                Directory.CreateDirectory(Path.Combine(modsPath, "kh3d"));
             if (!Directory.Exists(PresetPath))
                 Directory.CreateDirectory(PresetPath);
 
@@ -110,7 +124,7 @@ namespace OpenKh.Tools.ModsManager.Services
                     .ToList();
             });
         }
-        
+
         public static ICollection<string> EnabledMods
         {
             get
@@ -123,6 +137,8 @@ namespace OpenKh.Tools.ModsManager.Services
                         return File.Exists(EnabledModsPathBBS) ? File.ReadAllLines(EnabledModsPathBBS) : new string[0];
                     case "Recom":
                         return File.Exists(EnabledModsPathRECOM) ? File.ReadAllLines(EnabledModsPathRECOM) : new string[0];
+                    case "kh3d":
+                        return File.Exists(EnabledModsPathKH3D) ? File.ReadAllLines(EnabledModsPathKH3D) : new string[0];
                     default:
                         return File.Exists(EnabledModsPathKH2) ? File.ReadAllLines(EnabledModsPathKH2) : new string[0];
                 }
@@ -139,6 +155,9 @@ namespace OpenKh.Tools.ModsManager.Services
                         break;
                     case "Recom":
                         File.WriteAllLines(EnabledModsPathRECOM, value);
+                        break;
+                    case "kh3d":
+                        File.WriteAllLines(EnabledModsPathKH3D, value);
                         break;
                     default:
                         File.WriteAllLines(EnabledModsPathKH2, value);
@@ -236,6 +255,15 @@ namespace OpenKh.Tools.ModsManager.Services
             set
             {
                 _config.PcReleaseLocation = value;
+                _config.Save(ConfigPath);
+            }
+        }
+        public static string PcReleaseLocationKH3D
+        {
+            get => _config.PcReleaseLocationKH3D;
+            set
+            {
+                _config.PcReleaseLocationKH3D = value;
                 _config.Save(ConfigPath);
             }
         }
@@ -396,6 +424,22 @@ namespace OpenKh.Tools.ModsManager.Services
                 _config.Save(ConfigPath);
             }
         }
+        public static bool Extractkh3d
+        {
+            get => _config.GamesToExtract.Contains("kh3d");
+            set
+            {
+                if (value)
+                {
+                    _config.GamesToExtract.Add("kh3d");
+                }
+                else
+                {
+                    _config.GamesToExtract.Remove("kh3d");
+                }
+                _config.Save(ConfigPath);
+            }
+        }
         public static string LaunchGame
         {
             get => _config.LaunchGame;
@@ -411,6 +455,16 @@ namespace OpenKh.Tools.ModsManager.Services
             set
             {
                 _config.DarkMode = value;
+                _config.Save(ConfigPath);
+            }
+        }
+
+        public static IEnumerable<YamlGenPref> YamlGenPrefs
+        {
+            get => _config.YamlGenPrefs.AsReadOnly();
+            set
+            {
+                _config.YamlGenPrefs = value.ToList();
                 _config.Save(ConfigPath);
             }
         }
