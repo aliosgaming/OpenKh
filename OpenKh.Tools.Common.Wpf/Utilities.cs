@@ -30,7 +30,7 @@ namespace OpenKh.Tools.Common.Wpf
             var version = RunningAssemblyName?.Version;
             if (version == null)
                 return "unknown";
-            return $"{version.Major}.{version.Minor:D02}.{version.Build:D02}.{version.Revision}";
+            return $"\"3.3.0-KH2Rando\"";
         }
 
         public static void Catch(Action action)

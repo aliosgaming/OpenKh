@@ -20,49 +20,29 @@ namespace OpenKh.Tools.ModsManager.Services
         public async Task<CheckResult> CheckAsync(CancellationToken cancellation)
         {
             var gitClient = new GitHubClient(new ProductHeaderValue("OpenKh.Tools.ModsManager"));
-            var releases = await gitClient.Repository.Release.GetAll(
-                owner: "OpenKh",
-                name: "OpenKh",
-                options: new ApiOptions
-                {
-                    PageCount = 1,
-                    PageSize = 10,
-                    StartPage = 1
-                }
-            );
-            var latestAssets = releases
-                .OrderByDescending(release => release.CreatedAt)
-                .Where(release => _validTag.IsMatch(release.TagName))
-                .SelectMany(
-                    release => release.Assets
-                        .Where(asset => asset.Name == "openkh.zip" && asset.State == "uploaded")
-                        .Select(asset => (Release: release, Asset: asset))
-                )
-                .Take(1)
-                .ToArray();
-
-            if (latestAssets.Any())
+            var releases = gitClient.Repository.Release.GetLatest(owner: "aliosgaming", name: "OpenKh").Result;
+            if (releases != null)
             {
-                var latestAsset = latestAssets.First();
-
-                var remoteReleaseTag = latestAsset.Release.TagName;
+                var remoteReleaseTag = releases.TagName;
 
                 var localReleaseTagFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "openkh-release");
                 var localReleaseTag = File.Exists(localReleaseTagFile)
-                    ? File.ReadAllLines(localReleaseTagFile).First()
+                    ? File.ReadAllText(localReleaseTagFile)
                     : "(Unknown version)";
 
-                return new CheckResult(
-                    HasUpdate: localReleaseTag != remoteReleaseTag,
-                    CurrentVersion: localReleaseTag,
-                    NewVersion: remoteReleaseTag,
-                    DownloadZipUrl: latestAsset.Asset.BrowserDownloadUrl
-                );
+                if (localReleaseTag != remoteReleaseTag)
+                {
+                    return new CheckResult(
+                        HasUpdate: true,
+                        CurrentVersion: localReleaseTag,
+                        NewVersion: remoteReleaseTag,
+                        DownloadZipUrl: releases.Assets[0].BrowserDownloadUrl
+                    );
+                }
             }
-
             return new CheckResult(
                 HasUpdate: false,
-                CurrentVersion: "",
+                CurrentVersion: "v3.3.0",
                 NewVersion: "",
                 DownloadZipUrl: ""
             );

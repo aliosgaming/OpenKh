@@ -47,7 +47,7 @@ namespace OpenKh.Tools.ModsManager.Services
 
             await CreateBatchFileAsync(
                 tempBatFile: tempBatFile,
-                copyFrom: Path.Combine(tempZipDir, "openkh"),
+                copyFrom: tempZipDir,
                 copyTo: copyTo,
                 execAfter: $"start \"\" \"{Path.Combine(copyTo, "OpenKh.Tools.ModsManager.exe")}\""
             );
