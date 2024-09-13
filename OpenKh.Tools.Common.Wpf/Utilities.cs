@@ -15,7 +15,7 @@ namespace OpenKh.Tools.Common.Wpf
             MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
         public static Action<Exception> ExceptionHandler = DefaultExceptionHandler;
-        
+
         public static Window GetCurrentWindow() =>
             Application.Current.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive);
 
@@ -30,7 +30,7 @@ namespace OpenKh.Tools.Common.Wpf
             var version = RunningAssemblyName?.Version;
             if (version == null)
                 return "unknown";
-            return $"\"3.2.0-KH2Rando\"";
+            return $"\"3.4.0-KH2Rando\"";
         }
 
         public static void Catch(Action action)
@@ -44,7 +44,7 @@ namespace OpenKh.Tools.Common.Wpf
                 ExceptionHandler(ex);
             }
         }
-        
+
         public static void ShowError(string message, string title = "Error") =>
             MessageBox.Show(GetCurrentWindow(), message, title, MessageBoxButton.OK, MessageBoxImage.Error);
     }

@@ -116,7 +116,7 @@
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="Download _latest version" Command="{Binding OpenLinkCommand}"
+                <MenuItem Header="Download _latest version" Command="{Binding OpenLinkCommand}" Visibility="Collapsed"
                     CommandParameter="https://github.com/OpenKH/OpenKh/releases">
                     <MenuItem.Icon>
                         <Image Source="{StaticResource WebURL_16x}"/>

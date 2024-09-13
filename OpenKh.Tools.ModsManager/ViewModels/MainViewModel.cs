@@ -55,7 +55,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             "Recom",
             "kh3d"
         };
-        private int _wizardVersionNumber = 3;
+        private int _wizardVersionNumber = 5;
         private string[] executable = new string[]
         {
             "KINGDOM HEARTS II FINAL MIX.exe",
@@ -1243,7 +1243,7 @@ namespace OpenKh.Tools.ModsManager.ViewModels
             {
                 var message = "A new version of the Mod Manager has been detected!\n" +
                     $"[Current: {checkResult.CurrentVersion}, Latest: {checkResult.NewVersion}]\n\n" +
-                    "Update the Mod Manager?";
+                    "Update the Mods Manager?";
 
                 if (MessageBox.Show(message, "OpenKh", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
                 {
