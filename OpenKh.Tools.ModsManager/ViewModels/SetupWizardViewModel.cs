@@ -78,12 +78,21 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 OnPropertyChanged();
             }
         }
+        private Xceed.Wpf.Toolkit.WizardPage _wizardPageAfterLuaBackend;
+        public Xceed.Wpf.Toolkit.WizardPage WizardPageAfterLuaBackend
+        {
+            get => _wizardPageAfterLuaBackend;
+            private set
+            {
+                _wizardPageAfterLuaBackend = value;
+                OnPropertyChanged();
+            }
+        }
         public Xceed.Wpf.Toolkit.WizardPage PageIsoSelection { get; internal set; }
         public Xceed.Wpf.Toolkit.WizardPage PageEosInstall { get; internal set; }
-        public Xceed.Wpf.Toolkit.WizardPage PageEosConfig { get; internal set; }
-        public Xceed.Wpf.Toolkit.WizardPage PageLuaBackendInstall { get; internal set; }
+        public Xceed.Wpf.Toolkit.WizardPage PageSteamAPITrick { get; internal set; }
         public Xceed.Wpf.Toolkit.WizardPage PageRegion { get; internal set; }
-        public Xceed.Wpf.Toolkit.WizardPage PCLaunchOption { get; internal set; }
+        public Xceed.Wpf.Toolkit.WizardPage PageGameData { get; internal set; }
         public Xceed.Wpf.Toolkit.WizardPage LastPage { get; internal set; }
 
         public WizardPageStackService PageStack { get; set; } = new WizardPageStackService();
@@ -179,6 +188,34 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 OnPropertyChanged(nameof(OpenKhGameEngineConfigVisibility));
                 OnPropertyChanged(nameof(Pcsx2ConfigVisibility));
                 OnPropertyChanged(nameof(PcReleaseConfigVisibility));
+                OnPropertyChanged(nameof(BothPcReleaseSelected));
+                OnPropertyChanged(nameof(PcRelease1525Selected));
+                OnPropertyChanged(nameof(PcRelease28Selected));
+            }
+        }
+        public int PCReleaseLanguage
+        {
+            get
+            {
+                switch (ConfigurationService.PcReleaseLanguage)
+                {
+                    case "jp":
+                        return 1;
+                    default:
+                        return 0;
+                }
+            }
+            set
+            {
+                switch (value)
+                {
+                    case 1:
+                        ConfigurationService.PcReleaseLanguage = "jp";
+                        break;
+                    default:
+                        ConfigurationService.PcReleaseLanguage = "en";
+                        break;
+                }
             }
         }
 
@@ -213,6 +250,11 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                         ConfigurationService.PCVersion = "EGS";
                         break;
                 }
+                WizardPageAfterLuaBackend = LaunchOption switch
+                {
+                    1 => PageSteamAPITrick,
+                    _ => PageGameData,
+                };
             }
         }
         public RelayCommand SelectOpenKhGameEngineCommand { get; }
@@ -276,18 +318,18 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                 if (Directory.Exists(PcReleaseLocation) && (File.Exists(Path.Combine(PcReleaseLocation, "EOSSDK-Win64-Shipping.dll")) ||
                     File.Exists(Path.Combine(PcReleaseLocation, "steam_api64.dll"))) &&
                     Directory.Exists(PcReleaseLocationKH3D) && (File.Exists(Path.Combine(PcReleaseLocationKH3D, "EOSSDK-Win64-Shipping.dll")) ||
-                    File.Exists(Path.Combine(PcReleaseLocationKH3D, "steam_api64.dll"))))
+                    File.Exists(Path.Combine(PcReleaseLocationKH3D, "steam_api64.dll"))) && _gameEdition == 2)
                 {
                     return _pcReleasesSelected = "both";
                 }
                 else if (Directory.Exists(PcReleaseLocation) && (File.Exists(Path.Combine(PcReleaseLocation, "EOSSDK-Win64-Shipping.dll")) ||
-                    File.Exists(Path.Combine(PcReleaseLocation, "steam_api64.dll"))))
+                    File.Exists(Path.Combine(PcReleaseLocation, "steam_api64.dll"))) && _gameEdition == 2)
                 {
 
                     return _pcReleasesSelected = "1.5+2.5";
                 }
                 else if (Directory.Exists(PcReleaseLocationKH3D) && (File.Exists(Path.Combine(PcReleaseLocationKH3D, "EOSSDK-Win64-Shipping.dll")) ||
-                    File.Exists(Path.Combine(PcReleaseLocationKH3D, "steam_api64.dll"))))
+                    File.Exists(Path.Combine(PcReleaseLocationKH3D, "steam_api64.dll"))) && _gameEdition == 2)
                 {
 
                     return _pcReleasesSelected = "2.8";
@@ -359,6 +401,11 @@ namespace OpenKh.Tools.ModsManager.ViewModels
         {
             get => ConfigurationService.Extractkh3d;
             set => ConfigurationService.Extractkh3d = value;
+        }
+        public bool SkipRemastered
+        {
+            get => ConfigurationService.SkipRemastered;
+            set => ConfigurationService.SkipRemastered = value;
         }
         public bool LuaConfigkh1
         {
@@ -513,6 +560,8 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     return false;
             }
         }
+        public RelayCommand InstallSteamAPIFile {  get; set; }
+        public RelayCommand RemoveSteamAPIFile { get; set; }
         public RelayCommand InstallLuaBackendCommand { get; set; }
         public RelayCommand RemoveLuaBackendCommand { get; set; }
         public Visibility LuaBackendFoundVisibility => IsLuaBackendInstalled ? Visibility.Visible : Visibility.Collapsed;
@@ -1235,6 +1284,44 @@ namespace OpenKh.Tools.ModsManager.ViewModels
                     OnPropertyChanged(nameof(IsLuaBackendInstalled));
                     OnPropertyChanged(nameof(LuaBackendFoundVisibility));
                     OnPropertyChanged(nameof(LuaBackendNotFoundVisibility));
+                }
+            });
+            InstallSteamAPIFile = new RelayCommand(_ =>
+            {
+                if (GameCollection == 0)
+                {
+                    if (Directory.Exists(ConfigurationService.PcReleaseLocation))
+                    {
+                        File.WriteAllText(Path.Combine(ConfigurationService.PcReleaseLocation, "steam_appid.txt"), "2552430");
+                        ConfigurationService.SteamAPITrick1525 = true;
+                    }
+                }
+                else if (GameCollection == 1)
+                {
+                    if (Directory.Exists(ConfigurationService.PcReleaseLocationKH3D))
+                    {
+                        File.WriteAllText(Path.Combine(ConfigurationService.PcReleaseLocationKH3D, "steam_appid.txt"), "2552440");
+                        ConfigurationService.SteamAPITrick28 = true;
+                    }
+                }
+            });
+            RemoveSteamAPIFile = new RelayCommand(_ =>
+            {
+                if (GameCollection == 0)
+                {
+                    if (File.Exists(Path.Combine(ConfigurationService.PcReleaseLocation, "steam_appid.txt")))
+                    {
+                        File.Delete(Path.Combine(ConfigurationService.PcReleaseLocation, "steam_appid.txt"));
+                        ConfigurationService.SteamAPITrick1525 = false;
+                    }
+                }
+                else if (GameCollection == 1)
+                {
+                    if (File.Exists(Path.Combine(ConfigurationService.PcReleaseLocationKH3D, "steam_appid.txt")))
+                    {
+                        File.Delete(Path.Combine(ConfigurationService.PcReleaseLocationKH3D, "steam_appid.txt"));
+                        ConfigurationService.SteamAPITrick28 = false;
+                    }
                 }
             });
         }
